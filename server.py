@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS  # <--- NEW IMPORT
 import sqlite3
 import os
 import threading
@@ -9,6 +10,7 @@ import sys
 import fetcher
 
 app = Flask(__name__)
+CORS(app)  # <--- THIS LINE FIXES THE ERROR (Allows connection from anywhere)
 
 # --- CONFIGURATION ---
 # We use Render's persistent disk so data survives restarts
@@ -98,7 +100,10 @@ def get_history_api():
 @app.route('/')
 def home():
     conn = get_db_connection()
-    count = conn.execute("SELECT COUNT(*) FROM history").fetchone()[0]
+    try:
+        count = conn.execute("SELECT COUNT(*) FROM history").fetchone()[0]
+    except:
+        count = 0
     conn.close()
     return f"""
     <body style="font-family:monospace; background:#111; color:#0f0; text-align:center; padding-top:50px;">
